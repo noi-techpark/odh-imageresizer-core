@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  odh-imageresizer-core:
+    image: ${DOCKER_REGISTRY-}odhimageresizercore
+    build:
+      context: .
+      dockerfile: odh-imageresizer-core/Dockerfile
