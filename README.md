@@ -1,0 +1,1 @@
+# odh-imageresizer-core
