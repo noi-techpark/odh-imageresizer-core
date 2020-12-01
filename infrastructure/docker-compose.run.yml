@@ -1,0 +1,11 @@
+version: '3.4'
+
+services:
+  odh-imageresizer-core:
+    image: ${DOCKER_IMAGE}:${DOCKER_TAG}
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:80
+    restart: unless-stopped
+    ports:
+      - "${SERVER_PORT}:80"
