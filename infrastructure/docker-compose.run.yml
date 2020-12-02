@@ -6,6 +6,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:80
+      ASPNETCORE_S3BucketUrl: $(ODH_IMAGERESIZERCORE_S3)
     restart: unless-stopped
     ports:
       - "${SERVER_PORT}:80"
