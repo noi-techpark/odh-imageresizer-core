@@ -2,7 +2,11 @@ version: '3.4'
 
 services:
   odh-imageresizer-core:
-    image: ${DOCKER_REGISTRY-}odhimageresizercore
+    image: ${DOCKER_IMAGE:-odh-imageresizer-core}:${DOCKER_TAG:-latest}
     build:
       context: .
       dockerfile: odh-imageresizer-core/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    ports: 
+      - "6005:80"
