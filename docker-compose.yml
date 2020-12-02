@@ -8,5 +8,6 @@ services:
       dockerfile: odh-imageresizer-core/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_S3BucketUrl: $(ODH_IMAGERESIZERCORE_S3)
     ports: 
       - "6005:80"
