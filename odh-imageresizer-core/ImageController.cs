@@ -34,7 +34,8 @@ namespace odh_imageresizer_core
             {
                 using (var img = GetImage(imageurl))
                 {
-                    var returnimage = img;
+                    var returnimage = default(Image);
+                    var imgrawformat = img.RawFormat;
 
                     if (width > 0 || height > 0)
                     {
@@ -47,8 +48,11 @@ namespace odh_imageresizer_core
                             returnimage = img.Scale(width, height);
                         }
                     }
+                    else
+                        returnimage = img;
 
-                    return File(ImageToByteArray(returnimage, returnimage.RawFormat), returnimage.RawFormat.GetMimeType());
+                  
+                    return File(ImageToByteArray(returnimage, imgrawformat), imgrawformat.GetMimeType());
                 }
             }
             catch(Exception ex)
@@ -60,9 +64,11 @@ namespace odh_imageresizer_core
         //Test Method upload to S3 Bucket
 
 
-        private byte[] ImageToByteArray(System.Drawing.Image imageIn, System.Drawing.Imaging.ImageFormat imgformat)
+        private byte[] ImageToByteArray(System.Drawing.Image imageIn, ImageFormat imgformat)
         {
+         
             MemoryStream ms = new MemoryStream();
+            
             imageIn.Save(ms, imgformat);
             return ms.ToArray();
         }
