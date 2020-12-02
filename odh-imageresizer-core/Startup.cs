@@ -3,6 +3,7 @@ using AspNetCore.CacheOutput.InMemory.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -14,6 +15,15 @@ namespace odh_imageresizer_core
 {
     public class Startup
     {
+        public Startup(IWebHostEnvironment env, IConfiguration configuration)
+        {
+            Configuration = configuration;
+            CurrentEnvironment = env;
+        }
+
+        public IConfiguration Configuration { get; }
+        public IWebHostEnvironment CurrentEnvironment { get; }
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
