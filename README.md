@@ -1,6 +1,7 @@
 # odh-imageresizer-core
 
 little .Net Project to resize Images stored on a Amazon S3 Bucket
+Using LazZiya Imageresizer Nuget Package https://github.com/LazZiya/ImageResize
 
 ## Project Goals/Requirements:
 
