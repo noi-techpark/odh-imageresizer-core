@@ -39,12 +39,12 @@ namespace odh_imageresizer_core
                     if (width > 0 || height > 0)
                     {
                         if (width > 0 && height == 0)
-                            returnimage = ImageResize.ScaleByWidth(img, width);
+                            returnimage = img.ScaleByWidth(width);
                         else if (width == 0 && height > 0)
                             returnimage = img.ScaleByHeight(height);
                         else
                         {
-                            returnimage = ImageResize.Scale(img, width, height);
+                            returnimage = img.Scale(width, height);
                         }
                     }
 
