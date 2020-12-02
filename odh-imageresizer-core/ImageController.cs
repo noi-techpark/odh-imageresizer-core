@@ -53,7 +53,7 @@ namespace odh_imageresizer_core
             }
             catch(Exception ex)
             {
-                return BadRequest("Failed!");
+                return BadRequest(ex.Message + " file " + Configuration["S3BucketUrl"] + imageurl);
             }
         }
 
