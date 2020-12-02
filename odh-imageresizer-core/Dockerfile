@@ -12,6 +12,13 @@ RUN dotnet restore "odh-imageresizer-core/odh-imageresizer-core.csproj"
 COPY . .
 WORKDIR "/src/odh-imageresizer-core"
 RUN dotnet build "odh-imageresizer-core.csproj" -c Release -o /app/build
+# install System.Drawing native dependencies
+RUN apt-get update \
+    && apt-get install -y --allow-unauthenticated \
+        libc6-dev \
+        libgdiplus \
+        libx11-dev \
+     && rm -rf /var/lib/apt/lists/*
 
 FROM build AS publish
 RUN dotnet publish "odh-imageresizer-core.csproj" -c Release -o /app/publish
@@ -21,10 +28,3 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "odh-imageresizer-core.dll"]
 
-# install System.Drawing native dependencies
-RUN apt-get update \
-    && apt-get install -y --allow-unauthenticated \
-        libc6-dev \
-        libgdiplus \
-        libx11-dev \
-     && rm -rf /var/lib/apt/lists/*
