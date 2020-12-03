@@ -35,12 +35,18 @@ namespace odh_imageresizer_core
 
                 if (width != null || height != null)
                 {
+                    (int w, int h) = (width ?? 0, height ?? 0);
+                    float ratio = (float)img.Width / img.Height;
+                    var size = (w > h)
+                        ? new Size(w, (int)(w / ratio))
+                        : new Size((int)(h * ratio), h);
+
                     img.Mutate(ctx =>
                     {
                         ctx.Resize(new ResizeOptions
                         {
                             Mode = ResizeMode.Max,
-                            Size = new Size(width ?? height ?? 0, height ?? width ?? 0)
+                            Size = size
                         });
                     });
                 }
