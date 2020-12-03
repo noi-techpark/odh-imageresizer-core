@@ -30,7 +30,9 @@ namespace odh_imageresizer_core
         {
             services.AddInMemoryCacheOutput();
 
-            services.AddMvc();            
+            services.AddMvc();
+
+            services.AddHttpClient();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

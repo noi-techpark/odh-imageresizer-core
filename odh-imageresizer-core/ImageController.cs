@@ -19,9 +19,12 @@ namespace odh_imageresizer_core
     {
         public IConfiguration Configuration { get; }
 
-        public ImageController(IWebHostEnvironment env, IConfiguration configuration)
+        private readonly IHttpClientFactory _httpClientFactory;
+
+        public ImageController(IWebHostEnvironment env, IConfiguration configuration, IHttpClientFactory httpClientFactory)
         {
             Configuration = configuration;
+            _httpClientFactory = httpClientFactory;
         }
 
         [CacheOutput(ClientTimeSpan = 0, ServerTimeSpan = 100)]
@@ -74,7 +77,7 @@ namespace odh_imageresizer_core
         {
             string bucketurl = Configuration["S3BucketUrl"] ?? throw new InvalidProgramException("No S3 Bucket URL provided.");
 
-            using var client = new HttpClient(); // TODO: use HttpClientFactory
+            using var client = _httpClientFactory.CreateClient();
             byte[] bytes = await client.GetByteArrayAsync(bucketurl + imageUrl, cancellationToken);
             var img = Image.Load(bytes, out var imageFormat);
             return (img, imageFormat);
