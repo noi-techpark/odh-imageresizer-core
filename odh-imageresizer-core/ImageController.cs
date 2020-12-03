@@ -57,6 +57,7 @@ namespace odh_imageresizer_core
         {
             var ms = new MemoryStream();
             await imageIn.SaveAsync(ms, imgformat, cancellationToken);
+            ms.Position = 0;
             return ms;
         }
 
