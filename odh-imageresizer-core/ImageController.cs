@@ -96,10 +96,8 @@ namespace odh_imageresizer_core
 
         private async Task<(Image, IImageFormat)> GetImage(string imageUrl, CancellationToken cancellationToken)
         {
-            string bucketurl = Configuration["S3BucketUrl"] ?? throw new InvalidProgramException("No S3 Bucket URL provided.");
-
-            using var client = _httpClientFactory.CreateClient();
-            using var stream = await client.GetStreamAsync(bucketurl + imageUrl, cancellationToken);
+            using var client = _httpClientFactory.CreateClient("buckets");
+            using var stream = await client.GetStreamAsync(imageUrl, cancellationToken);
             var img = Image.Load(stream, out var imageFormat);
             return (img, imageFormat);
         }
