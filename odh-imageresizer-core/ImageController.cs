@@ -1,17 +1,15 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
+﻿using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
-using LazZiya.ImageResize;
-using System.IO;
+using System.Threading;
+using System;
 using AspNetCore.CacheOutput;
-using System.Net;
-using System.Drawing.Imaging;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp;
 
 namespace odh_imageresizer_core
 {
@@ -21,66 +19,69 @@ namespace odh_imageresizer_core
     {
         public IConfiguration Configuration { get; }
 
-        public ImageController(IWebHostEnvironment env, IConfiguration configuration)            
+        private readonly IHttpClientFactory _httpClientFactory;
+
+        public ImageController(IWebHostEnvironment env, IConfiguration configuration, IHttpClientFactory httpClientFactory)
         {
             Configuration = configuration;
+            _httpClientFactory = httpClientFactory;
         }
 
         [CacheOutput(ClientTimeSpan = 0, ServerTimeSpan = 100)]
         [HttpGet, Route("GetImage")]
-        public async Task<IActionResult> GetImage(string imageurl, int width = 0, int height = 0)
+        public async Task<IActionResult> GetImage(string imageurl, int? width = null, int? height = null, CancellationToken cancellationToken = default)
         {
             try
             {
-                using (var img = GetImage(imageurl))
+                var (img, imgrawformat) = await GetImage(imageurl, cancellationToken);
+                using var _ = img; // Lazy way to dispose the image resource ;)
+
+                if (width != null || height != null)
                 {
-                    var returnimage = img;
+                    (int w, int h) = (width ?? 0, height ?? 0);
+                    float ratio = (float)img.Width / img.Height;
+                    var size = (w > h)
+                        ? new Size(w, (int)(w / ratio))
+                        : new Size((int)(h * ratio), h);
 
-                    if (width > 0 || height > 0)
+                    img.Mutate(ctx =>
                     {
-                        if (width > 0 && height == 0)
-                            returnimage = ImageResize.ScaleByWidth(img, width);
-                        else if (width == 0 && height > 0)
-                            returnimage = img.ScaleByHeight(height);
-                        else
+                        ctx.Resize(new ResizeOptions
                         {
-                            returnimage = ImageResize.Scale(img, width, height);
-                        }
-                    }
-
-                    return File(ImageToByteArray(returnimage, returnimage.RawFormat), returnimage.RawFormat.GetMimeType());
+                            Mode = ResizeMode.Max,
+                            Size = size
+                        });
+                    });
                 }
+
+                var stream = await ImageToStream(img, imgrawformat, cancellationToken);
+                return File(stream, imgrawformat.DefaultMimeType);
             }
             catch(Exception ex)
             {
-                return BadRequest("Failed!");
+                return BadRequest(ex.Message + " " + ex.InnerException);
             }
         }
 
         //Test Method upload to S3 Bucket
 
-
-        private byte[] ImageToByteArray(System.Drawing.Image imageIn, System.Drawing.Imaging.ImageFormat imgformat)
+        private async Task<Stream> ImageToStream(Image imageIn, IImageFormat imgformat, CancellationToken cancellationToken = default)
         {
-            MemoryStream ms = new MemoryStream();
-            imageIn.Save(ms, imgformat);
-            return ms.ToArray();
+            var ms = new MemoryStream();
+            await imageIn.SaveAsync(ms, imgformat, cancellationToken);
+            ms.Position = 0;
+            return ms;
         }
 
-        private Image GetImage(string imageUrl)
+        private async Task<(Image, IImageFormat)> GetImage(string imageUrl, CancellationToken cancellationToken)
         {
-            WebClient wc = new WebClient();
+            string bucketurl = Configuration["S3BucketUrl"] ?? throw new InvalidProgramException("No S3 Bucket URL provided.");
 
-            string bucketurl = Configuration["S3BucketUrl"];
-
-            byte[] bytes = wc.DownloadData(bucketurl + imageUrl);
-            MemoryStream ms = new MemoryStream(bytes);
-            System.Drawing.Image img = System.Drawing.Image.FromStream(ms);
-
-            return img;
+            using var client = _httpClientFactory.CreateClient();
+            byte[] bytes = await client.GetByteArrayAsync(bucketurl + imageUrl, cancellationToken);
+            var img = Image.Load(bytes, out var imageFormat);
+            return (img, imageFormat);
         }
-
-              
     }
     
 }
