@@ -42,7 +42,7 @@ namespace odh_imageresizer_core
                     });
                 });
 
-                using var stream = await ImageToStream(img, imgrawformat, cancellationToken);
+                var stream = await ImageToStream(img, imgrawformat, cancellationToken);
                 return File(stream, imgrawformat.DefaultMimeType);
             }
             catch(Exception ex)
