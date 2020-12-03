@@ -1,17 +1,15 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
+﻿using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
-using LazZiya.ImageResize;
-using System.IO;
+using System.Threading;
+using System;
 using AspNetCore.CacheOutput;
-using System.Net;
-using System.Drawing.Imaging;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp;
 
 namespace odh_imageresizer_core
 {
@@ -21,39 +19,31 @@ namespace odh_imageresizer_core
     {
         public IConfiguration Configuration { get; }
 
-        public ImageController(IWebHostEnvironment env, IConfiguration configuration)            
+        public ImageController(IWebHostEnvironment env, IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
         [CacheOutput(ClientTimeSpan = 0, ServerTimeSpan = 100)]
         [HttpGet, Route("GetImage")]
-        public async Task<IActionResult> GetImage(string imageurl, int width = 0, int height = 0)
+        public async Task<IActionResult> GetImage(string imageurl, int? width = null, int? height = null, CancellationToken cancellationToken = default)
         {
             try
             {
-                using (var img = GetImage(imageurl))
+                var (img, imgrawformat) = await GetImage(imageurl, cancellationToken);
+                using var _ = img; // Lazy way to dispose the image resource ;)
+
+                img.Mutate(ctx =>
                 {
-                    var returnimage = default(Image);
-                    var imgrawformat = img.RawFormat;
-
-                    if (width > 0 || height > 0)
+                    ctx.Resize(new ResizeOptions
                     {
-                        if (width > 0 && height == 0)
-                            returnimage = img.ScaleByWidth(width);
-                        else if (width == 0 && height > 0)
-                            returnimage = img.ScaleByHeight(height);
-                        else
-                        {
-                            returnimage = img.Scale(width, height);
-                        }
-                    }
-                    else
-                        returnimage = img;
+                        Mode = ResizeMode.Max,
+                        Size = new Size(width ?? height ?? 0, height ?? width ?? 0)
+                    });
+                });
 
-                  
-                    return File(ImageToByteArray(returnimage, imgrawformat), imgrawformat.GetMimeType());
-                }
+                var stream = await ImageToStream(img, imgrawformat, cancellationToken);
+                return File(stream, imgrawformat.DefaultMimeType);
             }
             catch(Exception ex)
             {
@@ -63,30 +53,23 @@ namespace odh_imageresizer_core
 
         //Test Method upload to S3 Bucket
 
-
-        private byte[] ImageToByteArray(System.Drawing.Image imageIn, ImageFormat imgformat)
+        private async Task<Stream> ImageToStream(Image imageIn, IImageFormat imgformat, CancellationToken cancellationToken = default)
         {
-         
-            MemoryStream ms = new MemoryStream();
-            
-            imageIn.Save(ms, imgformat);
-            return ms.ToArray();
+            var ms = new MemoryStream();
+            await imageIn.SaveAsync(ms, imgformat, cancellationToken);
+            ms.Position = 0;
+            return ms;
         }
 
-        private Image GetImage(string imageUrl)
+        private async Task<(Image, IImageFormat)> GetImage(string imageUrl, CancellationToken cancellationToken)
         {
-            WebClient wc = new WebClient();
+            string bucketurl = Configuration["S3BucketUrl"] ?? throw new InvalidProgramException("No S3 Bucket URL provided.");
 
-            string bucketurl = Configuration["S3BucketUrl"];
-
-            byte[] bytes = wc.DownloadData(bucketurl + imageUrl);
-            MemoryStream ms = new MemoryStream(bytes);
-            System.Drawing.Image img = System.Drawing.Image.FromStream(ms);
-
-            return img;
+            using var client = new HttpClient(); // TODO: use HttpClientFactory
+            byte[] bytes = await client.GetByteArrayAsync(bucketurl + imageUrl, cancellationToken);
+            var img = Image.Load(bytes, out var imageFormat);
+            return (img, imageFormat);
         }
-
-              
     }
     
 }
