@@ -33,14 +33,17 @@ namespace odh_imageresizer_core
                 var (img, imgrawformat) = await GetImage(imageurl, cancellationToken);
                 using var _ = img; // Lazy way to dispose the image resource ;)
 
-                img.Mutate(ctx =>
+                if (width != null || height != null)
                 {
-                    ctx.Resize(new ResizeOptions
+                    img.Mutate(ctx =>
                     {
-                        Mode = ResizeMode.Max,
-                        Size = new Size(width ?? height ?? 0, height ?? width ?? 0)
+                        ctx.Resize(new ResizeOptions
+                        {
+                            Mode = ResizeMode.Max,
+                            Size = new Size(width ?? height ?? 0, height ?? width ?? 0)
+                        });
                     });
-                });
+                }
 
                 var stream = await ImageToStream(img, imgrawformat, cancellationToken);
                 return File(stream, imgrawformat.DefaultMimeType);
