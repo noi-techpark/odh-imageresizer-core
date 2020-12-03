@@ -99,8 +99,8 @@ namespace odh_imageresizer_core
             string bucketurl = Configuration["S3BucketUrl"] ?? throw new InvalidProgramException("No S3 Bucket URL provided.");
 
             using var client = _httpClientFactory.CreateClient();
-            byte[] bytes = await client.GetByteArrayAsync(bucketurl + imageUrl, cancellationToken);
-            var img = Image.Load(bytes, out var imageFormat);
+            using var stream = await client.GetStreamAsync(bucketurl + imageUrl, cancellationToken);
+            var img = Image.Load(stream, out var imageFormat);
             return (img, imageFormat);
         }
     }
