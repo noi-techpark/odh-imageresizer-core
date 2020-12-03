@@ -2,12 +2,12 @@
 
 FROM mcr.microsoft.com/dotnet/aspnet:5.0-buster-slim AS base
 # install System.Drawing native dependencies
-RUN apt-get update \
-    && apt-get install -y --allow-unauthenticated \
-        libc6-dev \
-        libgdiplus \
-        libx11-dev \
-     && rm -rf /var/lib/apt/lists/*
+#RUN apt-get update \
+    #&& apt-get install -y --allow-unauthenticated \
+        #libc6-dev \
+        #libgdiplus \
+        #libx11-dev \
+     #&& rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
