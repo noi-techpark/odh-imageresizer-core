@@ -10,6 +10,9 @@ using Microsoft.Extensions.Configuration;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Formats.Gif;
 
 namespace odh_imageresizer_core
 {
@@ -67,10 +70,28 @@ namespace odh_imageresizer_core
 
         private async Task<Stream> ImageToStream(Image imageIn, IImageFormat imgformat, CancellationToken cancellationToken = default)
         {
+            IImageEncoder encoder = ConfigureImageEncoder(imgformat);
+
             var ms = new MemoryStream();
-            await imageIn.SaveAsync(ms, imgformat, cancellationToken);
+            await imageIn.SaveAsync(ms, encoder, cancellationToken);
             ms.Position = 0;
             return ms;
+        }
+
+        private static IImageEncoder ConfigureImageEncoder(IImageFormat imgformat)
+        {
+            var mngr = SixLabors.ImageSharp.Configuration.Default.ImageFormatsManager;
+            var encoder = mngr.FindEncoder(imgformat);
+            if (encoder is JpegEncoder jpegEncoder)
+            {
+                jpegEncoder.Quality = 90;
+            }
+            else if (encoder is PngEncoder pngEncoder)
+            { }
+            else if (encoder is GifEncoder gifEncoder)
+            { }
+
+            return encoder;
         }
 
         private async Task<(Image, IImageFormat)> GetImage(string imageUrl, CancellationToken cancellationToken)
