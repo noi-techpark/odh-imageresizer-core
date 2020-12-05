@@ -98,9 +98,7 @@ namespace odh_imageresizer_core
         {
             using var client = _httpClientFactory.CreateClient("buckets");
             using var stream = await client.GetStreamAsync(imageUrl, cancellationToken);
-            var img = Image.Load(stream, out var imageFormat);
-            return (img, imageFormat);
+            return await Image.LoadWithFormatAsync(stream);
         }
     }
-    
 }
