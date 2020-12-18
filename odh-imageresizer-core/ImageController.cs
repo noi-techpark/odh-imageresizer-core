@@ -13,6 +13,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Gif;
+using AspNetCore.Proxy;
 
 namespace odh_imageresizer_core
 {
@@ -29,6 +30,8 @@ namespace odh_imageresizer_core
             Configuration = configuration;
             _httpClientFactory = httpClientFactory;
         }
+
+        #region ImageResizing
 
         [CacheOutput(ClientTimeSpan = 0, ServerTimeSpan = 100)]
         [HttpGet, Route("GetImage")]
@@ -100,5 +103,20 @@ namespace odh_imageresizer_core
             using var stream = await client.GetStreamAsync(imageUrl, cancellationToken);
             return await Image.LoadWithFormatAsync(stream);
         }
+
+        #endregion
+
+        #region ImageProxying
+
+        //Using nuget package https://github.com/twitchax/aspnetcore.proxy
+
+        [HttpGet, Route("GetImageByUrl")]
+        public Task GetImageByUrl(string imageurl)
+        {
+            return this.HttpProxyAsync($"{imageurl}");
+        }
+
+
+        #endregion
     }
 }

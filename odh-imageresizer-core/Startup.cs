@@ -38,6 +38,13 @@ namespace odh_imageresizer_core
 
             var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(10);
 
+            services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            }));
+
             services.AddHttpClient("buckets", c =>
                 {
                     string bucketurl = Configuration["S3BucketUrl"] ?? throw new InvalidProgramException("No S3 Bucket URL provided.");
@@ -58,6 +65,10 @@ namespace odh_imageresizer_core
             app.UseCacheOutput();
 
             app.UseRouting();
+
+            app.UseCors("CorsPolicy");
+
+            //app.UseResponseCompression();
 
             app.UseEndpoints(endpoints =>
             {
