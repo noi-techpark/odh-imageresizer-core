@@ -30,7 +30,7 @@ Clone the repository
 
 ### using Docker
 
-'docker-compose build'
+`docker-compose build` build image
 `docker-compose up` starts the appliaction on http://localhost:6005/
 
 ### using .Net Core CLI
