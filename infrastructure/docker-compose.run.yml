@@ -4,7 +4,7 @@ services:
   odh-imageresizer-core:
     image: ${DOCKER_IMAGE}:${DOCKER_TAG}
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
       ASPNETCORE_URLS: http://+:80
       ASPNETCORE_S3BucketUrl: ${ODH_IMAGERESIZERCORE_S3}
     restart: unless-stopped
