@@ -2,14 +2,14 @@ using AspNetCore.CacheOutput.Extensions;
 using AspNetCore.CacheOutput.InMemory.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Polly;
+using Polly.Extensions.Http;
+using Polly.Timeout;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Net.Http;
 
 namespace odh_imageresizer_core
 {
@@ -32,7 +32,26 @@ namespace odh_imageresizer_core
 
             services.AddMvc();
 
-            services.AddHttpClient();
+            var retryPolicy = HttpPolicyExtensions.HandleTransientHttpError()
+                .Or<TimeoutRejectedException>()
+                .RetryAsync();
+
+            var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(10);
+
+            services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            }));
+
+            services.AddHttpClient("buckets", c =>
+                {
+                    string bucketurl = Configuration["S3BucketUrl"] ?? throw new InvalidProgramException("No S3 Bucket URL provided.");
+                    c.BaseAddress = new Uri(bucketurl);
+                })
+                .AddPolicyHandler(retryPolicy)
+                .AddPolicyHandler(timeoutPolicy);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -47,10 +66,14 @@ namespace odh_imageresizer_core
 
             app.UseRouting();
 
+            app.UseCors("CorsPolicy");
+
+            //app.UseResponseCompression();
+
             app.UseEndpoints(endpoints =>
-            {                
+            {
                 endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
-            });            
+            });
         }
     }
 }

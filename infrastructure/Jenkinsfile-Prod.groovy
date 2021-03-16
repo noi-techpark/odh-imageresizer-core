@@ -6,8 +6,8 @@ pipeline {
         DOCKER_IMAGE = '755952719952.dkr.ecr.eu-west-1.amazonaws.com/odh-imageresizer-core'
         DOCKER_TAG = "prod-$BUILD_NUMBER"
         ASPNETCORE_ENVIRONMENT = "Production"
-        SERVER_PORT = "2032"
-        
+        ODH_IMAGERESIZERCORE_S3 = credentials('odh-imageresizer-core-s3bucket')
+        SERVER_PORT = "1032"        
     }
 
     stages {
@@ -19,6 +19,8 @@ pipeline {
                     echo 'COMPOSE_PROJECT_NAME=${DOCKER_PROJECT_NAME}' >> .env
                     echo 'DOCKER_IMAGE=${DOCKER_IMAGE}' >> .env
                     echo 'DOCKER_TAG=${DOCKER_TAG}' >> .env
+                    echo 'ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}' >> .env
+                    echo 'ODH_IMAGERESIZERCORE_S3=${ODH_IMAGERESIZERCORE_S3}' >> .env
                     echo 'SERVER_PORT=${SERVER_PORT}' >> .env                    
                 """
             }

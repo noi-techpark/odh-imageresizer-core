@@ -10,6 +10,10 @@ using Microsoft.Extensions.Configuration;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Formats.Gif;
+using AspNetCore.Proxy;
 
 namespace odh_imageresizer_core
 {
@@ -26,6 +30,8 @@ namespace odh_imageresizer_core
             Configuration = configuration;
             _httpClientFactory = httpClientFactory;
         }
+
+        #region ImageResizing
 
         [CacheOutput(ClientTimeSpan = 0, ServerTimeSpan = 100)]
         [HttpGet, Route("GetImage")]
@@ -67,21 +73,50 @@ namespace odh_imageresizer_core
 
         private async Task<Stream> ImageToStream(Image imageIn, IImageFormat imgformat, CancellationToken cancellationToken = default)
         {
+            IImageEncoder encoder = ConfigureImageEncoder(imgformat);
+
             var ms = new MemoryStream();
-            await imageIn.SaveAsync(ms, imgformat, cancellationToken);
+            await imageIn.SaveAsync(ms, encoder, cancellationToken);
             ms.Position = 0;
             return ms;
         }
 
+        private static IImageEncoder ConfigureImageEncoder(IImageFormat imgformat)
+        {
+            var mngr = SixLabors.ImageSharp.Configuration.Default.ImageFormatsManager;
+            var encoder = mngr.FindEncoder(imgformat);
+            if (encoder is JpegEncoder jpegEncoder)
+            {
+                jpegEncoder.Quality = 90;
+            }
+            else if (encoder is PngEncoder pngEncoder)
+            { }
+            else if (encoder is GifEncoder gifEncoder)
+            { }
+
+            return encoder;
+        }
+
         private async Task<(Image, IImageFormat)> GetImage(string imageUrl, CancellationToken cancellationToken)
         {
-            string bucketurl = Configuration["S3BucketUrl"] ?? throw new InvalidProgramException("No S3 Bucket URL provided.");
-
-            using var client = _httpClientFactory.CreateClient();
-            byte[] bytes = await client.GetByteArrayAsync(bucketurl + imageUrl, cancellationToken);
-            var img = Image.Load(bytes, out var imageFormat);
-            return (img, imageFormat);
+            using var client = _httpClientFactory.CreateClient("buckets");
+            using var stream = await client.GetStreamAsync(imageUrl, cancellationToken);
+            return await Image.LoadWithFormatAsync(stream);
         }
+
+        #endregion
+
+        #region ImageProxying
+
+        //Using nuget package https://github.com/twitchax/aspnetcore.proxy
+
+        [HttpGet, Route("GetImageByUrl")]
+        public Task GetImageByUrl(string imageurl)
+        {
+            return this.HttpProxyAsync($"{imageurl}");
+        }
+
+
+        #endregion
     }
-    
 }
