@@ -40,11 +40,18 @@ namespace odh_imageresizer_core
             try
             {
                 using var client = _httpClientFactory.CreateClient("buckets");
-                using var stream = await client.GetStreamAsync(filename, cancellationToken);
-                
-                string extension = Path.GetExtension(filename);
 
-                //var stream = await ImageToStream(img, imgrawformat, cancellationToken);
+                //
+                var response = await client.GetAsync(filename, cancellationToken);
+
+                var mimeType = response.Content.Headers.ContentType;                
+
+                var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+
+                //var stream = await client.GetStreamAsync(filename, cancellationToken);        
+
+                var extension = mimeType != null ? mimeType.MediaType : "text/plain";
+
                 return File(stream, extension);
             }
             catch(Exception ex)
