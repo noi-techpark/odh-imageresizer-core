@@ -108,14 +108,13 @@ namespace odh_imageresizer_core
 
         #region ImageProxying
 
+        //Proxy URL
         //Using nuget package https://github.com/twitchax/aspnetcore.proxy
-
         [HttpGet, Route("GetImageByUrl")]
         public Task GetImageByUrl(string imageurl)
         {
             return this.HttpProxyAsync($"{imageurl}");
         }
-
 
         #endregion
     }
