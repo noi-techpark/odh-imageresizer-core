@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   odh-imageresizer-core:
-    image: ${DOCKER_IMAGE:-odh-imageresizer-core}:${DOCKER_TAG:-latest}
+    image: ${DOCKER_IMAGE}:${DOCKER_TAG}
     build:
       context: .
       dockerfile: odh-imageresizer-core/Dockerfile
