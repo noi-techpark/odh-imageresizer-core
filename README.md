@@ -3,6 +3,8 @@
 .Net Project to resize Images stored on a Amazon S3 Bucket
 Using ImageSharp https://github.com/SixLabors/ImageSharp
 
+[![CI/CD](https://github.com/noi-techpark/odh-imageresizer-core/actions/workflows/main.yml/badge.svg)](https://github.com/noi-techpark/odh-imageresizer-core/actions/workflows/main.yml)
+
 ## Project Goals/Requirements:
 
 * .Net Core 5
