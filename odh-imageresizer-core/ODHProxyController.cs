@@ -23,9 +23,6 @@ namespace odh_imageresizer_core
 
                 var fullurl = url + parameter;
 
-                //Quick production fix
-                fullurl = fullurl.Replace("https:/", "https://");
-
                 Console.WriteLine("Url to proxy: " + fullurl);
 
                 return this.HttpProxyAsync(fullurl);
