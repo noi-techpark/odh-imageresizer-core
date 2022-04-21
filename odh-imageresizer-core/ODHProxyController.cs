@@ -5,7 +5,7 @@ using System;
 
 namespace odh_imageresizer_core
 {
-    [Route("api/[controller]")]
+    [Route("api")]
     [ApiController]
     public class ODHProxyController : ControllerBase
     {
