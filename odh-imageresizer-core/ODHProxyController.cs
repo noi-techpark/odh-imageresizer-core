@@ -60,6 +60,29 @@ namespace odh_imageresizer_core
             }
         }
 
+        [CacheOutput(ClientTimeSpan = 14400, ServerTimeSpan = 0)]
+        [HttpGet, Route("ODHProxyCachedonClient/{*url}")]
+        public Task GetODHProxyCachedonClient(string url)
+        {
+            try
+            {
+                var parameter = "?";
+
+                foreach (var paramdict in HttpContext.Request.Query)
+                {
+                    parameter = parameter + paramdict.Key + "=" + paramdict.Value;
+                }
+
+                var fullurl = url + parameter;
+
+                return this.HttpProxyAsync(fullurl);
+            }
+            catch (Exception ex)
+            {
+                return Task.FromException(ex);
+            }
+        }
+
 
         [CacheOutput(ClientTimeSpan = 0, ServerTimeSpan = 14400)]
         [HttpGet, Route("ODHProxyCustomCached/{contenttype}/{*url}")]
@@ -84,7 +107,32 @@ namespace odh_imageresizer_core
             await HttpContext.CopyProxyHttpResponse(response, contenttype);
             return Ok();
         }
+
+        [CacheOutput(ClientTimeSpan = 14400, ServerTimeSpan = 0)]
+        [HttpGet, Route("ODHProxyCustomCachedonClient/{contenttype}/{*url}")]
+        public async Task<IActionResult> GetODHProxyCustomCachedonClient(string contenttype, string url)
+        {
+            var parameter = "?";
+
+            foreach (var paramdict in HttpContext.Request.Query)
+            {
+                parameter = parameter + paramdict.Key + "=" + paramdict.Value;
+            }
+
+            var fullurl = url + parameter;
+
+            var _client = new HttpClient(new HttpClientHandler()
+            {
+                AllowAutoRedirect = false
+            });
+
+            var request = HttpContext.CreateProxyHttpRequest(new Uri(fullurl));
+            var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, HttpContext.RequestAborted);
+            await HttpContext.CopyProxyHttpResponse(response, contenttype);
+            return Ok();
+        }
     }
+
 
     public static class MyHttpContextExtensions
     {
