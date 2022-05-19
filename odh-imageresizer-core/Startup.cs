@@ -30,15 +30,13 @@ namespace odh_imageresizer_core
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddInMemoryCacheOutput();
-
-            services.AddResponseCaching();
-
-            services.Configure<GzipCompressionProviderOptions>(options => options.Level = System.IO.Compression.CompressionLevel.Optimal);
-            services.AddResponseCompression(options =>
-            {
-                options.EnableForHttps = true;
-                options.Providers.Add<GzipCompressionProvider>();
-            });
+      
+            //services.Configure<GzipCompressionProviderOptions>(options => options.Level = System.IO.Compression.CompressionLevel.Optimal);
+            //services.AddResponseCompression(options =>
+            //{
+            //    options.EnableForHttps = true;
+            //    options.Providers.Add<GzipCompressionProvider>();
+            //});
 
             services.AddMvc();
 
@@ -54,6 +52,8 @@ namespace odh_imageresizer_core
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
+
+            services.AddResponseCaching();
 
             services.AddHttpClient("buckets", c =>
                 {
@@ -72,7 +72,7 @@ namespace odh_imageresizer_core
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseResponseCompression();
+            //app.UseResponseCompression();
 
             app.UseRouting();
 

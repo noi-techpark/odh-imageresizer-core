@@ -84,7 +84,7 @@ namespace odh_imageresizer_core
         }
 
 
-        [CacheOutput(ClientTimeSpan = 0, ServerTimeSpan = 14400)]
+        [CacheOutput(ClientTimeSpan = 14400, ServerTimeSpan = 14400)]
         [HttpGet, Route("ODHProxyCustomCached/{contenttype}/{*url}")]
         public async Task<IActionResult> GetODHProxyCustomCached(string contenttype, string url)
         {
@@ -111,6 +111,30 @@ namespace odh_imageresizer_core
         [CacheOutput(ClientTimeSpan = 14400, ServerTimeSpan = 0)]
         [HttpGet, Route("ODHProxyCustomCachedonClient/{contenttype}/{*url}")]
         public async Task<IActionResult> GetODHProxyCustomCachedonClient(string contenttype, string url)
+        {
+            var parameter = "?";
+
+            foreach (var paramdict in HttpContext.Request.Query)
+            {
+                parameter = parameter + paramdict.Key + "=" + paramdict.Value;
+            }
+
+            var fullurl = url + parameter;
+
+            var _client = new HttpClient(new HttpClientHandler()
+            {
+                AllowAutoRedirect = false
+            });
+
+            var request = HttpContext.CreateProxyHttpRequest(new Uri(fullurl));
+            var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, HttpContext.RequestAborted);
+            await HttpContext.CopyProxyHttpResponse(response, contenttype);
+            return Ok();
+        }
+
+        [CacheOutput(ClientTimeSpan = 0, ServerTimeSpan = 14400)]
+        [HttpGet, Route("ODHProxyCustomCachedonServer/{contenttype}/{*url}")]
+        public async Task<IActionResult> GetODHProxyCustomCachedonServer(string contenttype, string url)
         {
             var parameter = "?";
 
