@@ -186,6 +186,9 @@ namespace odh_imageresizer_core
                 }
             }
 
+            //Remove the Accept-Encoding Header
+            requestMessage.Headers.Remove("Accept-Encoding");
+
             requestMessage.Headers.Host = uri.Authority;
             requestMessage.RequestUri = uri;
             requestMessage.Method = new HttpMethod(request.Method);
