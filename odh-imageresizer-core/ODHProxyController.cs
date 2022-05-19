@@ -68,7 +68,7 @@ namespace odh_imageresizer_core
         }
 
 
-        [CacheOutput(ClientTimeSpan = 0, ServerTimeSpan = 14400)]
+        [CacheOutput(ClientTimeSpan = 14400, ServerTimeSpan = 0)]
         [HttpGet, Route("ODHProxyCustomCached/{contenttype}/{*url}")]
         public async Task<IActionResult> GetODHProxyCustomCached(string contenttype, string url)
         {
