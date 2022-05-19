@@ -52,13 +52,6 @@ namespace odh_imageresizer_core
 
                 var fullurl = url + parameter;
 
-                Console.WriteLine("Url to proxy: " + fullurl);
-
-                //AspNetCore.Proxy.Options.HttpProxyOptions proxyoptions = new AspNetCore.Proxy.Options.HttpProxyOptions()
-                //{
-                    
-                //}
-
                 return this.HttpProxyAsync(fullurl);
             }
             catch (Exception ex)
@@ -68,7 +61,7 @@ namespace odh_imageresizer_core
         }
 
 
-        [CacheOutput(ClientTimeSpan = 14400, ServerTimeSpan = 0)]
+        [CacheOutput(ClientTimeSpan = 0, ServerTimeSpan = 14400)]
         [HttpGet, Route("ODHProxyCustomCached/{contenttype}/{*url}")]
         public async Task<IActionResult> GetODHProxyCustomCached(string contenttype, string url)
         {

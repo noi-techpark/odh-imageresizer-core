@@ -2,6 +2,7 @@ using AspNetCore.CacheOutput.Extensions;
 using AspNetCore.CacheOutput.InMemory.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,6 +30,15 @@ namespace odh_imageresizer_core
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddInMemoryCacheOutput();
+
+            services.AddResponseCaching();
+
+            services.Configure<GzipCompressionProviderOptions>(options => options.Level = System.IO.Compression.CompressionLevel.Optimal);
+            services.AddResponseCompression(options =>
+            {
+                options.EnableForHttps = true;
+                options.Providers.Add<GzipCompressionProvider>();
+            });
 
             services.AddMvc();
 
@@ -62,11 +72,13 @@ namespace odh_imageresizer_core
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseCacheOutput();
+            app.UseResponseCompression();
 
             app.UseRouting();
 
             app.UseCors("CorsPolicy");
+
+            app.UseCacheOutput();
 
             //app.UseResponseCompression();
 
