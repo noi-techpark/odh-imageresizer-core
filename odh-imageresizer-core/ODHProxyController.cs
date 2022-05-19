@@ -6,6 +6,8 @@ using AspNetCore.CacheOutput;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace odh_imageresizer_core
 {
@@ -201,6 +203,8 @@ namespace odh_imageresizer_core
             var response = context.Response;
 
             response.StatusCode = (int)responseMessage.StatusCode;
+
+            
             foreach (var header in responseMessage.Headers)
             {
                 response.Headers[header.Key] = header.Value.ToArray();
@@ -212,7 +216,20 @@ namespace odh_imageresizer_core
             }
 
             // SendAsync removes chunking from the response. This removes the header so it doesn't expect a chunked response.
-            response.Headers.Remove("transfer-encoding");
+            response.Headers.Remove("Transfer-Encoding");
+            response.Headers.Remove("Connection");
+            response.Headers.Remove("Cache-Control");
+            response.Headers.Remove("Pragma");
+            response.Headers.Remove("Expires");
+            response.Headers.Remove("Vary");
+            response.Headers.Remove("set-cookie");
+            response.Headers.Remove("CF-Cache-Status");
+            response.Headers.Remove("Expect-CT");
+            response.Headers.Remove("Server");
+            response.Headers.Remove("CF-RAY");
+            response.Headers.Remove("Date");
+            response.Headers.Remove("Content-Encoding");
+
 
             //https://localhost:44373/api/ODHProxyCustomCached/https://www.dolomitisuperski.com/file/?uuidLift=01e04d73-8ab9-44b8-9b37-d693d4ddf49f
 
@@ -227,7 +244,7 @@ namespace odh_imageresizer_core
 
             using (var responseStream = await responseMessage.Content.ReadAsStreamAsync())
             {
-                await responseStream.CopyToAsync(response.Body, 512, context.RequestAborted);
+                await responseStream.CopyToAsync(response.Body, 4096, context.RequestAborted);
             }
         }
 
