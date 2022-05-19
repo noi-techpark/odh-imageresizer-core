@@ -198,7 +198,7 @@ namespace odh_imageresizer_core
             if (!string.IsNullOrEmpty(contenttypetouse) && contenttypetouse != "nochange")
             {
                 response.Headers.Remove("content-type");
-                response.Headers.Add("content-type", usecustomcontenttype);
+                response.Headers.Add("content-type", contenttypetouse);
             }                
 
             using (var responseStream = await responseMessage.Content.ReadAsStreamAsync())
