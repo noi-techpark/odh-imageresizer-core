@@ -12,7 +12,7 @@ Using ImageSharp https://github.com/SixLabors/ImageSharp
 
 ### ImageResizer Functionality
 
-Test Imageresizer with
+Test Imageresizer with  
 https://images.tourism.testingmachine.eu/api/Image/GetImage?imageurl=testbild.jpg&width=300
 
 parameter
@@ -22,7 +22,7 @@ height -> scale image to this height
 
 ### Image Proxy Functionality
 
-Test Image Proxy Functionality by passing imageurl (useful for CORS issues)
+Test Image Proxy Functionality by passing imageurl (useful for CORS issues)  
 https://images.tourism.testingmachine.eu/api/Image/GetImageByUrl?imageurl=https://noi.bz.it/themes/custom/noi_techpark/logo.svg
 
 
