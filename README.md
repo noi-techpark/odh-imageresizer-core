@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: NOI Techpark <digital@noi.bz.it>
+
+SPDX-License-Identifier: CC0-1.0
+-->
+
 # odh-imageresizer-core
 
 .Net Project to resize Images stored on a Amazon S3 Bucket
