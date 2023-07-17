@@ -9,7 +9,7 @@ SPDX-License-Identifier: CC0-1.0
 .Net Project to resize Images stored on a Amazon S3 Bucket
 Using ImageSharp https://github.com/SixLabors/ImageSharp
 
-![REUSE Compliance](https://github.com/noi-techpark/odh-imageresizer-core/actions/workflows/reuse.yml/badge.svg)
+[![REUSE Compliance](https://github.com/noi-techpark/odh-imageresizer-core/actions/workflows/reuse.yml/badge.svg)](https://github.com/noi-techpark/odh-docs/wiki/REUSE#badges)
 [![CI/CD](https://github.com/noi-techpark/odh-imageresizer-core/actions/workflows/main.yml/badge.svg)](https://github.com/noi-techpark/odh-imageresizer-core/actions/workflows/main.yml)
 
 ## Project Goals/Requirements:
