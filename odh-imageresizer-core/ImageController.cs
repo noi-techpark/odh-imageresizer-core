@@ -43,7 +43,7 @@ namespace odh_imageresizer_core
         {
             try
             {
-                var (img, imgrawformat) = await LoadImage(imageurl, cancellationToken);
+                var img = await LoadImage(imageurl, cancellationToken);
                 using var _ = img; // Lazy way to dispose the image resource ;)
 
                 if (width != null || height != null)
@@ -63,6 +63,9 @@ namespace odh_imageresizer_core
                         });
                     });
                 }
+                var imgrawformat = img.Metadata.DecodedImageFormat;
+                if (imgrawformat == null)
+                    throw new Exception("Imageformat detection failed");
 
                 var stream = await ImageToStream(img, imgrawformat, cancellationToken);
                 return File(stream, imgrawformat.DefaultMimeType);
@@ -76,7 +79,7 @@ namespace odh_imageresizer_core
         //Test Method upload to S3 Bucket
 
         private async Task<Stream> ImageToStream(Image imageIn, IImageFormat imgformat, CancellationToken cancellationToken = default)
-        {
+        {            
             IImageEncoder encoder = ConfigureImageEncoder(imgformat);
 
             var ms = new MemoryStream();
@@ -88,10 +91,10 @@ namespace odh_imageresizer_core
         private static IImageEncoder ConfigureImageEncoder(IImageFormat imgformat)
         {
             var mngr = SixLabors.ImageSharp.Configuration.Default.ImageFormatsManager;
-            var encoder = mngr.FindEncoder(imgformat);
+            var encoder = mngr.GetEncoder(imgformat);
             if (encoder is JpegEncoder jpegEncoder)
             {
-                jpegEncoder.Quality = 90;
+                //jpegEncoder.Quality = 90;
             }
             else if (encoder is PngEncoder pngEncoder)
             { }
@@ -101,12 +104,12 @@ namespace odh_imageresizer_core
             return encoder;
         }
 
-        private async Task<(Image, IImageFormat)> LoadImage(string imageUrl, CancellationToken cancellationToken)
+        private async Task<Image> LoadImage(string imageUrl, CancellationToken cancellationToken)
         {
             using var client = _httpClientFactory.CreateClient("buckets");
-            using var stream = await client.GetStreamAsync(imageUrl, cancellationToken);
+            using var stream = await client.GetStreamAsync(imageUrl, cancellationToken);           
 
-            return await Image.LoadWithFormatAsync(stream);
+            return await Image.LoadAsync(stream);  //LoadWithFormatAsync(stream);
         }
 
         #endregion
