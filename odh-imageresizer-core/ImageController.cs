@@ -36,8 +36,8 @@ namespace odh_imageresizer_core
         }
 
         #region ImageResizing
-
-        [CacheOutput(ClientTimeSpan = 0, ServerTimeSpan = 100)]
+        
+        [CacheOutput(ClientTimeSpan = 86400, ServerTimeSpan = 86400)]
         [HttpGet, Route("GetImage")]
         public async Task<IActionResult> GetImage(string imageurl, int? width = null, int? height = null, CancellationToken cancellationToken = default)
         {
