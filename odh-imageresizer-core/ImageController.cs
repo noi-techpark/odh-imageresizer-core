@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: NOI Techpark <digital@noi.bz.it>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 ﻿using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -32,14 +36,14 @@ namespace odh_imageresizer_core
         }
 
         #region ImageResizing
-
-        [CacheOutput(ClientTimeSpan = 0, ServerTimeSpan = 100)]
+        
+        [CacheOutput(ClientTimeSpan = 86400, ServerTimeSpan = 86400)]
         [HttpGet, Route("GetImage")]
         public async Task<IActionResult> GetImage(string imageurl, int? width = null, int? height = null, CancellationToken cancellationToken = default)
         {
             try
             {
-                var (img, imgrawformat) = await GetImage(imageurl, cancellationToken);
+                var (img, imgrawformat) = await LoadImage(imageurl, cancellationToken);
                 using var _ = img; // Lazy way to dispose the image resource ;)
 
                 if (width != null || height != null)
@@ -97,10 +101,11 @@ namespace odh_imageresizer_core
             return encoder;
         }
 
-        private async Task<(Image, IImageFormat)> GetImage(string imageUrl, CancellationToken cancellationToken)
+        private async Task<(Image, IImageFormat)> LoadImage(string imageUrl, CancellationToken cancellationToken)
         {
             using var client = _httpClientFactory.CreateClient("buckets");
             using var stream = await client.GetStreamAsync(imageUrl, cancellationToken);
+
             return await Image.LoadWithFormatAsync(stream);
         }
 
