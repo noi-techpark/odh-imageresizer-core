@@ -39,7 +39,7 @@ namespace odh_imageresizer_core
         {
             try
             {
-                var (img, imgrawformat) = await GetImage(imageurl, cancellationToken);
+                var (img, imgrawformat) = await LoadImage(imageurl, cancellationToken);
                 using var _ = img; // Lazy way to dispose the image resource ;)
 
                 if (width != null || height != null)
@@ -97,10 +97,11 @@ namespace odh_imageresizer_core
             return encoder;
         }
 
-        private async Task<(Image, IImageFormat)> GetImage(string imageUrl, CancellationToken cancellationToken)
+        private async Task<(Image, IImageFormat)> LoadImage(string imageUrl, CancellationToken cancellationToken)
         {
             using var client = _httpClientFactory.CreateClient("buckets");
             using var stream = await client.GetStreamAsync(imageUrl, cancellationToken);
+
             return await Image.LoadWithFormatAsync(stream);
         }
 
